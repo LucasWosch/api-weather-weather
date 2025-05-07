@@ -35,4 +35,24 @@ const createWeather = async (data) => {
   return created;
 };
 
-module.exports = { getAllWeather, createWeather };
+const getWeatherByCityId = async (cityId) => {
+    const cacheKey = `weather:city:${cityId}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+  
+    const weathers = await Weather.findAll({
+      where: { cityId },
+      raw: true
+    });
+  
+    const city = await axios.get(`${process.env.CITIES_API}/${cityId}`);
+    const result = weathers.map(w => ({
+      ...w,
+      cityName: city.data.name
+    }));
+  
+    await redis.set(cacheKey, JSON.stringify(result), 'EX', 3600);
+    return result;
+};
+
+module.exports = { getAllWeather, createWeather, getWeatherByCityId };

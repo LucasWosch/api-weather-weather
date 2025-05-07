@@ -18,4 +18,13 @@ const createWeather = async (req, res) => {
   }
 };
 
-module.exports = { getWeather, createWeather };
+const getWeatherByCity = async (req, res) => {
+    try {
+        const result = await weatherService.getWeatherByCityId(req.params.cityId);
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+module.exports = { getWeather, createWeather, getWeatherByCity };
